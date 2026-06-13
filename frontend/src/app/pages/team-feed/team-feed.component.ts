@@ -94,7 +94,7 @@ const MOODS = ['🚀','😊','😐','😴','🔥','🤯'];
             </div>
             <div class="row-gap">
               <span class="late-badge" *ngIf="myStandup.isLate">⏰ Late</span>
-              <button class="btn-outline sm" *ngIf="canEdit()" (click)="startEdit()">Edit</button>
+              <button class="btn-outline sm" (click)="startEdit()" [disabled]="!canEdit()">Edit</button>
               <span class="locked-label" *ngIf="!canEdit()">🔒 Locked</span>
             </div>
           </div>

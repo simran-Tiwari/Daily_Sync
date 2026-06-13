@@ -45,15 +45,23 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Edit standup — 1-hour window
+// Edit standup — 2-day window
 router.put('/:id', auth, async (req, res) => {
   try {
     const standup = await Standup.findById(req.params.id);
     if (!standup) return res.status(404).json({ message: 'Not found' });
     if (standup.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
-    if (Date.now() - new Date(standup.submittedAt).getTime() > 3600000)
-      return res.status(403).json({ message: 'Edit window has passed (1 hour)' });
+    if (Date.now() - new Date(standup.submittedAt).getTime() > 2 * 24 * 3600000)
+      return res.status(403).json({ message: 'Edit window has passed (2 days)' });
     const { doneYesterday, doingToday, blockers, mood } = req.body;
+    standup.edits = standup.edits || [];
+    standup.edits.push({
+      doneYesterday: standup.doneYesterday,
+      doingToday: standup.doingToday,
+      blockers: standup.blockers,
+      mood: standup.mood,
+      updatedAt: new Date()
+    });
     Object.assign(standup, { doneYesterday, doingToday, blockers, mood });
     await standup.save();
     res.json(standup);

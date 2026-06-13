@@ -39,6 +39,31 @@ import { ThemeService } from '../../services/theme.service';
           No standups found for this date.
         </div>
 
+        <div class="feed" *ngIf="feedData && feedData.standups.length > 0 && !weeklyMode">
+          <div class="standup-card card" *ngFor="let s of feedData.standups">
+            <div class="s-header">
+              <div>
+                <h4>👤 {{ s.userId.name }} {{ s.mood ? s.mood : '' }}</h4>
+                <div class="edit-note" *ngIf="s.edits?.length">Edited {{ s.edits.length }} time{{ s.edits.length === 1 ? '' : 's' }}</div>
+              </div>
+              <span class="history-date">{{ selectedDate }}</span>
+            </div>
+            <div class="s-row"><span class="label">✅ Done:</span> {{ s.doneYesterday || '—' }}</div>
+            <div class="s-row"><span class="label">🎯 Today:</span> {{ s.doingToday || '—' }}</div>
+            <div class="s-row" *ngIf="s.blockers?.trim()"><span class="label">⚠️ Blocker:</span> {{ s.blockers }}</div>
+            <div class="edit-history" *ngIf="s.edits?.length">
+              <div class="edit-title">Previous version{{ s.edits.length === 1 ? '' : 's' }}</div>
+              <div class="edit-card" *ngFor="let edit of s.edits; let i = index">
+                <div class="edit-meta">Version {{ s.edits.length - i }} · {{ formatDate(edit.updatedAt) }}</div>
+                <div class="s-row"><span class="label">✅ Done:</span> {{ edit.doneYesterday || '—' }}</div>
+                <div class="s-row"><span class="label">🎯 Today:</span> {{ edit.doingToday || '—' }}</div>
+                <div class="s-row" *ngIf="edit.blockers?.trim()"><span class="label">⚠️ Blocker:</span> {{ edit.blockers }}</div>
+                <div class="s-row" *ngIf="edit.mood"><span class="label">😊 Mood:</span> {{ edit.mood }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="card summary-card" *ngIf="summary">
           <div class="summary-header">
             <h3>{{ weeklyMode ? '📊 Weekly Digest' : '📋 Compiled Summary' }}</h3>
@@ -260,7 +285,15 @@ export class HistoryComponent implements OnInit {
   load() {
     this.weeklyMode = false;
     if (!this.selectedDate) return;
-    this.standupService.getHistory(this.teamId, this.selectedDate).subscribe(d => this.feedData = d);
+    this.standupService.getHistory(this.teamId, this.selectedDate).subscribe(d => {
+      this.feedData = d;
+      if (this.feedData?.standups) {
+        this.feedData.standups = this.feedData.standups.map((s: any) => ({
+          ...s,
+          edits: s.edits?.slice().reverse() || []
+        }));
+      }
+    });
     this.standupService.getSummary(this.teamId, this.selectedDate).subscribe(r => this.summary = r.summary);
   }
 
@@ -284,6 +317,10 @@ export class HistoryComponent implements OnInit {
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
     a.download = `standup-${this.selectedDate}.csv`;
     a.click();
+  }
+
+  formatDate(value: string) {
+    return value ? new Date(value).toLocaleString() : '';
   }
 
   exportPdf() { window.print(); }

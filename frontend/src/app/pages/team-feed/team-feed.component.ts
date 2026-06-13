@@ -60,7 +60,7 @@ const MOODS = ['🚀','😊','😐','😴','🔥','🤯'];
               (click)="form.mood = form.mood === m ? '' : m">{{ m }}</button>
           </div>
           <p class="error" *ngIf="submitError">{{ submitError }}</p>
-          <button class="btn-primary" (click)="submit()" [disabled]="submitting">
+          <button class="btn-primary submit-btn" (click)="submit()" [disabled]="submitting">
             {{ submitting ? 'Submitting…' : 'Submit Standup' }}
           </button>
         </div>
@@ -88,7 +88,10 @@ const MOODS = ['🚀','😊','😐','😴','🔥','🤯'];
 
         <div class="card form-card submitted" *ngIf="myStandup && !editing">
           <div class="submitted-header">
-            <span>✅ Submitted today {{ myStandup.mood }}</span>
+            <div>
+              <span>✅ Submitted today {{ myStandup.mood }}</span>
+              <div class="edit-note">You can edit this standup within 2 days of submission.</div>
+            </div>
             <div class="row-gap">
               <span class="late-badge" *ngIf="myStandup.isLate">⏰ Late</span>
               <button class="btn-outline sm" *ngIf="canEdit()" (click)="startEdit()">Edit</button>
@@ -291,6 +294,7 @@ styles: [`
     display: flex;
     gap: 8px;
     margin-top: 6px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
   }
 
@@ -665,7 +669,7 @@ export class TeamFeedComponent implements OnInit {
 
   canEdit() {
     if (!this.myStandup) return false;
-    return Date.now() - new Date(this.myStandup.submittedAt).getTime() < 3600000;
+    return Date.now() - new Date(this.myStandup.submittedAt).getTime() < 2 * 24 * 3600000;
   }
 
   startEdit() {

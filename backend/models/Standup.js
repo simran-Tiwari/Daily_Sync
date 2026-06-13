@@ -9,6 +9,13 @@ const standupSchema = new mongoose.Schema({
   blockers:        { type: String, default: '' },
   blockerResolved: { type: Boolean, default: false },
   mood:            { type: String, default: '' },
+  edits: [{
+    doneYesterday: { type: String, default: '' },
+    doingToday:    { type: String, default: '' },
+    blockers:      { type: String, default: '' },
+    mood:          { type: String, default: '' },
+    updatedAt:     { type: Date, default: Date.now }
+  }],
   reactions:       [{ emoji: String, userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } }],
   submittedAt:     { type: Date, default: Date.now },
   isLate:          { type: Boolean, default: false }

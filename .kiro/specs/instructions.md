@@ -44,7 +44,7 @@ npm run dev
 2. Date field on Standup is always `YYYY-MM-DD` string from `new Date().toISOString().slice(0,10)`.
 3. Invite codes: 6 uppercase alphanumeric chars via `Math.random().toString(36)`.
 4. `POST /api/standup` checks for existing `{ teamId, userId, date }` — returns 409 if duplicate.
-5. **Edit window**: `PUT /api/standup/:id` checks `Date.now() - standup.submittedAt < 3600000` (1 hour). Returns 403 if window has passed.
+5. **Edit window**: `PUT /api/standup/:id` checks `Date.now() - standup.submittedAt < 2 * 24 * 3600000` (2 days). Returns 403 if window has passed.
 6. **isLate**: on submit, if team has a `dueTime`, compare current time against it and set `isLate: true` if past due.
 7. Admin check: compare `req.user.id === team.createdBy.toString()` for admin-only routes.
 8. **Reactions**: `POST /api/standup/:id/react` with `{ emoji }` — toggle (add if not present, remove if already reacted with same emoji by same user).
@@ -106,7 +106,7 @@ ng serve
 2. Backend: new routes (reactions, resolve, streaks, weekly digest, admin routes, settings)
 3. Frontend: ThemeService + dark mode toggle
 4. Frontend: mood picker on standup form
-5. Frontend: edit window lock (1-hour check)
+5. Frontend: edit window lock (2-day check)
 6. Frontend: streak badges on feed
 7. Frontend: reactions on standup cards
 8. Frontend: blocker resolve button

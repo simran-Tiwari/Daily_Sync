@@ -35,6 +35,8 @@ import { ThemeService } from '../../services/theme.service';
           <button class="btn-outline sm" (click)="loadWeeklyDigest()">📊 Weekly Digest</button>
         </div>
 
+        <div class="info-note">Edit window is 2 days from submission. Past revisions appear below when available.</div>
+
         <div class="empty" *ngIf="feedData && feedData.standups.length === 0 && !weeklyMode">
           No standups found for this date.
         </div>
@@ -44,15 +46,17 @@ import { ThemeService } from '../../services/theme.service';
             <div class="s-header">
               <div>
                 <h4>👤 {{ s.userId.name }} {{ s.mood ? s.mood : '' }}</h4>
-                <div class="edit-note" *ngIf="s.edits?.length">Edited {{ s.edits.length }} time{{ s.edits.length === 1 ? '' : 's' }}</div>
+                <div class="edit-note" *ngIf="s.edits?.length">
+                  Edited {{ s.edits.length }} time{{ s.edits.length === 1 ? '' : 's' }}
+                </div>
               </div>
-              <span class="history-date">{{ selectedDate }}</span>
+              <span class="history-date">{{ formatDate(s.submittedAt) || selectedDate }}</span>
             </div>
             <div class="s-row"><span class="label">✅ Done:</span> {{ s.doneYesterday || '—' }}</div>
             <div class="s-row"><span class="label">🎯 Today:</span> {{ s.doingToday || '—' }}</div>
             <div class="s-row" *ngIf="s.blockers?.trim()"><span class="label">⚠️ Blocker:</span> {{ s.blockers }}</div>
             <div class="edit-history" *ngIf="s.edits?.length">
-              <div class="edit-title">Previous version{{ s.edits.length === 1 ? '' : 's' }}</div>
+              <div class="edit-title">Previous standups</div>
               <div class="edit-card" *ngFor="let edit of s.edits; let i = index">
                 <div class="edit-meta">Version {{ s.edits.length - i }} · {{ formatDate(edit.updatedAt) }}</div>
                 <div class="s-row"><span class="label">✅ Done:</span> {{ edit.doneYesterday || '—' }}</div>
@@ -197,6 +201,26 @@ import { ThemeService } from '../../services/theme.service';
     max-width: 180px;
   }
 
+  .info-note {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+
+  .edit-note {
+    font-size: 0.85rem;
+    margin-top: 6px;
+    color: var(--text);
+  }
+
+  .edit-note.no-edits {
+    color: var(--text-muted);
+  }
+
   .empty {
     color: var(--text-muted);
     font-style: italic;
@@ -217,6 +241,37 @@ import { ThemeService } from '../../services/theme.service';
     display: flex;
     gap: 8px;
     align-items: center;
+  }
+
+  .edit-history {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .edit-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .edit-card {
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    margin-bottom: 12px;
+  }
+
+  .edit-card:last-child {
+    margin-bottom: 0;
+  }
+
+  .edit-meta {
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-muted);
   }
 
   .summary-text {
@@ -303,6 +358,18 @@ export class HistoryComponent implements OnInit {
     this.standupService.getWeeklyDigest(this.teamId).subscribe(r => this.summary = r.summary);
   }
 
+  formatDate(value: string | Date | undefined) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const formattedDate = `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+    const timezone = date.toLocaleTimeString(undefined, { timeZoneName: 'short' }).split(' ').pop();
+    return timezone ? `${formattedDate} ${timezone}` : formattedDate;
+  }
+
   copy() {
     navigator.clipboard.writeText(this.summary).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000); });
   }
@@ -317,10 +384,6 @@ export class HistoryComponent implements OnInit {
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
     a.download = `standup-${this.selectedDate}.csv`;
     a.click();
-  }
-
-  formatDate(value: string) {
-    return value ? new Date(value).toLocaleString() : '';
   }
 
   exportPdf() { window.print(); }

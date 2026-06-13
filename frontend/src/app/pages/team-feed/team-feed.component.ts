@@ -94,7 +94,7 @@ const MOODS = ['🚀','😊','😐','😴','🔥','🤯'];
             </div>
             <div class="row-gap">
               <span class="late-badge" *ngIf="myStandup.isLate">⏰ Late</span>
-              <button class="btn-outline sm" (click)="startEdit()" [disabled]="!canEdit()">Edit</button>
+              <button class="btn-primary sm edit-btn" (click)="startEdit()" [disabled]="!canEdit()">Edit</button>
               <span class="locked-label" *ngIf="!canEdit()">🔒 Locked</span>
             </div>
           </div>
@@ -146,8 +146,8 @@ const MOODS = ['🚀','😊','😐','😴','🔥','🤯'];
             <h3>📋 Compiled Summary</h3>
             <div class="row-gap">
               <button class="btn-outline sm" (click)="exportCsv()">⬇️ CSV</button>
-              <button class="btn-outline sm" (click)="exportPdf()">🖨️ PDF</button>
-              <button class="btn-primary sm" (click)="copy()">{{ copied ? '✅ Copied!' : '📋 Copy' }}</button>
+              <button class="btn-outline sm" (click)="exportPdf()">📄 PDF</button>
+              <button class="btn-primary sm copy-btn" (click)="copy()">{{ copied ? '✅ Copied!' : '📋 Copy' }}</button>
             </div>
           </div>
           <pre class="summary-text" id="summary-print">{{ summary }}</pre>
@@ -248,9 +248,17 @@ styles: [`
     transition: all 0.25s ease;
   }
 
+  .btn-primary.sm.edit-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1f2937;
+    border: 1px solid rgba(31, 41, 55, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
   .back:hover,
   .team-name:hover,
-  .btn-outline.sm:hover {
+  .btn-outline.sm:hover,
+  .btn-primary.sm.edit-btn:hover {
     background: rgba(255, 255, 255, 0.22);
     border-color: white;
     transform: translateY(-2px);
@@ -517,6 +525,15 @@ styles: [`
     gap: 8px;
   }
 
+  .summary-header .btn-outline {
+    color: #8b5cf6;
+    border: 2px solid #8b5cf6;
+  }
+
+  .summary-header .copy-btn {
+    color: white;
+  }
+
   .summary-text {
     white-space: pre-wrap;
     font-family: monospace;
@@ -616,6 +633,7 @@ export class TeamFeedComponent implements OnInit {
   streaks: Record<string, number> = {};
   isAdmin = false;
   currentUserId = '';
+  currentUserEmail = '';
   currentInviteCode = '';
   allMembers: any[] = [];
   dueTime = '';
@@ -637,7 +655,9 @@ export class TeamFeedComponent implements OnInit {
     const state = this.router.getCurrentNavigation()?.extras.state as any || history.state;
     this.teamId = state?.teamId || this.route.snapshot.paramMap.get('teamId')!;
     this.teamName = this.route.snapshot.paramMap.get('teamId')!;
-    this.currentUserId = this.auth.getUser()?.id?.toString() || '';
+    const currentUser = this.auth.getUser();
+    this.currentUserId = currentUser?.id?.toString() || '';
+    this.currentUserEmail = currentUser?.email || '';
     this.loadFeed();
     this.loadStreaks();
   }
@@ -646,7 +666,7 @@ export class TeamFeedComponent implements OnInit {
     this.standupService.getToday(this.teamId).subscribe(data => {
       this.feedData = data;
       if (data.teamName) this.teamName = data.teamName;
-      this.myStandup = data.standups.find((s: any) => s.userId._id?.toString() === this.currentUserId) ?? null;
+      this.myStandup = data.standups.find((s: any) => this.isStandupOwner(s)) ?? null;
       this.isAdmin = data.createdBy?.toString() === this.currentUserId;
       this.dueTime = data.dueTime || '';
       this.currentInviteCode = data.inviteCode || '';
@@ -667,17 +687,24 @@ export class TeamFeedComponent implements OnInit {
     });
   }
 
+  isStandupOwner(standup: any) {
+    const standupUserId = standup?.userId?._id?.toString() || standup?.userId?.toString() || '';
+    return standupUserId === this.currentUserId;
+  }
+
   canEdit() {
-    if (!this.myStandup) return false;
+    if (!this.myStandup || !this.isStandupOwner(this.myStandup)) return false;
     return Date.now() - new Date(this.myStandup.submittedAt).getTime() < 2 * 24 * 3600000;
   }
 
   startEdit() {
+    if (!this.myStandup || !this.isStandupOwner(this.myStandup)) return;
     this.form = { doneYesterday: this.myStandup.doneYesterday, doingToday: this.myStandup.doingToday, blockers: this.myStandup.blockers, mood: this.myStandup.mood || '' };
     this.editing = true;
   }
 
   update() {
+    if (!this.myStandup || !this.isStandupOwner(this.myStandup)) return;
     this.submitting = true;
     this.standupService.update(this.myStandup._id, this.form).subscribe({
       next: () => { this.submitting = false; this.editing = false; this.loadFeed(); },

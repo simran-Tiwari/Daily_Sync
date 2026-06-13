@@ -1,6 +1,27 @@
 # ⚡ DailySync
 
-> Team standup tracker — fill 3 prompts, share a clean summary anywhere.
+> Team standup tracker — submit daily standups, share a polished summary, and keep a team-facing history.
+
+## What This Project Does
+
+DailySync helps distributed teams capture daily standup updates with a simple form, stores submissions per team and date, and aggregates them into a clean summary for easy sharing.
+
+Key capabilities:
+- login/signup with JWT auth
+- create or join teams via invite code
+- submit daily standups with progress, plans, blockers, and mood
+- view team feed with blocker status, late flags, reactions, and streaks
+- edit standups within a limited window
+- export summaries as CSV or print-friendly PDF
+- browse past days and weekly digests
+- admin team settings for member management and due time
+
+## Tech Stack
+
+- Frontend: Angular standalone components, `HttpClient`, `Router`, `FormsModule`
+- Backend: Node.js, Express, JWT-secured REST API
+- Database: MongoDB with Mongoose models
+- Deployment: Vercel for frontend hosting, local or cloud MongoDB for backend storage
 
 ## Quick Start
 
@@ -32,18 +53,27 @@ DailySync/
 │   ├── middleware/    JWT auth
 │   └── server.js
 └── frontend/
-    └── src/app/
-        ├── pages/     home, login, signup, dashboard, team-feed, history
-        ├── services/  auth, team, standup
-        ├── guards/    authGuard
-        └── interceptors/ authInterceptor
+    ├── src/app/
+    │   ├── pages/     home, login, signup, dashboard, team-feed, history
+    │   ├── services/  auth, team, standup, theme
+    │   ├── guards/    authGuard
+    │   └── interceptors/ authInterceptor
+    ├── angular.json
+    ├── package.json
+    └── tsconfig.json
 ```
+
+## Live Demo
+- https://daily-sync-two.vercel.app/
 
 ## Features
 - JWT auth (signup / login)
-- Create team → get invite code; join via code
-- Daily standup form (Done / Today / Blockers) — locked after midnight
-- Team feed with blocker highlights and submission counter
-- Auto-compiled copy-paste summary
-- History browser with date picker
-- Responsive (mobile + desktop)
+- Create or join teams using a 6-character invite code
+- Daily standup form with Done / Today / Blockers / Mood fields
+- Standups editable for up to 2 days after submission
+- Team feed with blocker highlights, late flags, reactions, streaks, and submission counter
+- Admin controls for member removal, invite code regeneration, and daily due time settings
+- Auto-generated compiled summary with copy-to-clipboard
+- Export CSV and print/PDF summary support
+- History view with date picker and weekly digest summary
+- Dark mode toggle and responsive UI for mobile and desktop

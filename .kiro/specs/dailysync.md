@@ -28,7 +28,7 @@ DailySync is a team standup tracker web app. Team members fill a daily standup f
 | History view with date picker | ✅ Done |
 | Responsive layout | ✅ Done |
 | Mood / energy emoji (4th field) | ✅ Done |
-| Edit window — 1 hour after submit | ✅ Done |
+| Edit window — 2 days after submit | ✅ Done |
 | Dark mode toggle | ✅ Done |
 | Streak indicator (🔥 N-day streak) | ✅ Done |
 | Admin: remove member | ✅ Done |
@@ -58,7 +58,7 @@ DailySync is a team standup tracker web app. Team members fill a daily standup f
 ### Daily Standup Form
 - Four fields: **Done yesterday**, **Doing today**, **Blockers**, **Mood** (optional emoji picker)
 - One submission per user per team per day
-- Submission is editable for **1 hour** after posting, then locked
+- Submission is editable for **2 days** after posting, then locked
 - After the edit window closes the form becomes read-only for that day
 
 ### Mood / Energy Emoji
@@ -190,5 +190,5 @@ Compound unique index: `{ teamId, userId, date }`
 - All API errors return `{ message: "..." }` with appropriate HTTP status
 - CORS enabled for Angular dev server (`localhost:4200`)
 - Date logic uses `YYYY-MM-DD` strings
-- Edit window: 1 hour from `submittedAt` timestamp
+- Edit window: 2 days from `submittedAt` timestamp
 - Dark mode preference persisted in localStorage

@@ -637,7 +637,7 @@ export class TeamFeedComponent implements OnInit {
     const state = this.router.getCurrentNavigation()?.extras.state as any || history.state;
     this.teamId = state?.teamId || this.route.snapshot.paramMap.get('teamId')!;
     this.teamName = this.route.snapshot.paramMap.get('teamId')!;
-    this.currentUserId = this.auth.getUser()?.id;
+    this.currentUserId = this.auth.getUser()?.id?.toString() || '';
     this.loadFeed();
     this.loadStreaks();
   }
@@ -646,7 +646,7 @@ export class TeamFeedComponent implements OnInit {
     this.standupService.getToday(this.teamId).subscribe(data => {
       this.feedData = data;
       if (data.teamName) this.teamName = data.teamName;
-      this.myStandup = data.standups.find((s: any) => s.userId._id === this.currentUserId) ?? null;
+      this.myStandup = data.standups.find((s: any) => s.userId._id?.toString() === this.currentUserId) ?? null;
       this.isAdmin = data.createdBy?.toString() === this.currentUserId;
       this.dueTime = data.dueTime || '';
       this.currentInviteCode = data.inviteCode || '';

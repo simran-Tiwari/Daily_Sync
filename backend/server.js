@@ -4,7 +4,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:4200' }));
+const allowedOrigins = ['http://localhost:4200', 'https://daily-sync-two.vercel.app'];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy violation'));
+    }
+  }
+}));
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth'));
